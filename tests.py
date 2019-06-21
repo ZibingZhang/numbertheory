@@ -45,8 +45,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(triple3[0] ** 2 + triple3[1] ** 2, triple3[2] ** 2)
 
         self.assertRaises(ValueError, prim_triple, 1, 5)
-        self.assertRaises(ValueError, prim_triple, 5, 0)
-        self.assertRaises(ValueError, prim_triple, 5, -1)
+        self.assertRaises(NotNatError, prim_triple, 5, 0)
+        self.assertRaises(NotNatError, prim_triple, 5, -1)
         self.assertRaises(ValueError, prim_triple, 6, 3)
         self.assertRaises(ValueError, prim_triple, 7, 2)
         self.assertRaises(CoprimeError, prim_triple, 15, 5)
@@ -70,8 +70,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(prime_factors(1001), [(7, 1), (11, 1), (13, 1)])
         self.assertEqual(prime_factors(1260), [(2, 2), (3, 2), (5, 1), (7, 1)])
 
-        self.assertRaises(ValueError, prime_factors, -10)
-        self.assertRaises(ValueError, prime_factors, 0)
+        self.assertRaises(NotNatError, prime_factors, -10)
+        self.assertRaises(NotNatError, prime_factors, 0)
 
     def test_lin_congruence(self):
         self.assertEqual(lin_congruence(7, 1, 31), {9})
@@ -87,13 +87,13 @@ class Tests(unittest.TestCase):
         self.assertRaises(ValueError, lin_congruence, 9, 9, 0)
 
     def test_euler_phi(self):
-        self.assertEqual(euler_phi(1), 0)
-        self.assertEqual(euler_phi(2), 1)
-        self.assertEqual(euler_phi(3), 2)
-        self.assertEqual(euler_phi(200), 80)
+        self.assertEqual(eulers_phi(1), 0)
+        self.assertEqual(eulers_phi(2), 1)
+        self.assertEqual(eulers_phi(3), 2)
+        self.assertEqual(eulers_phi(200), 80)
 
-        self.assertRaises(ValueError, euler_phi, -1)
-        self.assertRaises(ValueError, euler_phi, 0)
+        self.assertRaises(NotNatError, eulers_phi, -1)
+        self.assertRaises(NotNatError, eulers_phi, 0)
 
     def test_inv(self):
         self.assertEqual(inv(3, 7), 5)
@@ -102,25 +102,26 @@ class Tests(unittest.TestCase):
         self.assertEqual(inv(3, 26), 9)
         self.assertEqual(inv(9, 26), 3)
 
-        self.assertRaises(ValueError, inv, 1, -1)
-        self.assertRaises(ValueError, inv, 1, 0)
+        self.assertRaises(NotNatError, inv, 1, -1)
+        self.assertRaises(NotNatError, inv, 1, 0)
         self.assertRaises(ValueError, inv, 0, 7)
         self.assertRaises(CoprimeError, inv, 2, 6)
 
     def test_chinese_remain(self):
-        self.assertEqual(chinese_remain([(1, 5), (2, 7), (3, 9), (4, 11)]), (1731, 3465))
+        self.assertEqual(chinese_remainder([(1, 5), (2, 7), (3, 9), (4, 11)]), (1731, 3465))
 
-        self.assertRaises(ValueError, chinese_remain, [(1, 2), (2, 3), (3, 4)])
-        self.assertRaises(ValueError, chinese_remain, [(1, 3), (2, 2), (3, 4)])
-        self.assertRaises(ValueError, chinese_remain, [(1, 2), (2, 4), (3, 3)])
-        self.assertRaises(ValueError, chinese_remain, [(1, 3), (2, 5), (3, -1)])
-        self.assertRaises(ValueError, chinese_remain, [(1, 0), (2, 5), (3, 7)])
+        self.assertRaises(CoprimeError, chinese_remainder, [(1, 2), (2, 3), (3, 4)])
+        self.assertRaises(CoprimeError, chinese_remainder, [(1, 3), (2, 2), (3, 4)])
+        self.assertRaises(CoprimeError, chinese_remainder, [(1, 2), (2, 4), (3, 3)])
+        self.assertRaises(NotNatError, chinese_remainder, [(1, 3), (2, 5), (3, -1)])
+        self.assertRaises(NotNatError, chinese_remainder, [(1, 0), (2, 5), (3, 7)])
+        self.assertRaises(ValueError, chinese_remainder, [])
 
-    def test_divisor_sum(self):
-        self.assertEqual(divisor_sum(1, 0), 1)
-        self.assertEqual(divisor_sum(2, 0), 2)
-        self.assertEqual(divisor_sum(3, 0), 2)
-        self.assertEqual(divisor_sum(4, 0), 3)
+    # def test_divisor_sum(self):
+    #     self.assertEqual(divisor_sum(1, 0), 1)
+    #     self.assertEqual(divisor_sum(2, 0), 2)
+    #     self.assertEqual(divisor_sum(3, 0), 2)
+    #     self.assertEqual(divisor_sum(4, 0), 3)
 
 
 if __name__ == "__main__":

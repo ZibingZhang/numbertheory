@@ -74,7 +74,7 @@ def prim_triple(s: int, t: int) -> Tuple[int, int, int]:
     if not s > t:
         raise ValueError("First argument must be strictly greater than the second.")
     elif not t >= 1:
-        raise ValueError("Second argument must be greater than or equal to 1.")
+        raise NotNatError("Second argument must be greater than or equal to 1.")
     elif s % 2 == 0 or t % 2 == 0:
         raise ValueError("Both arguments must be odd.")
     elif not gcd(s, t) == 1:
@@ -143,7 +143,7 @@ def prime_factors(nat: int) -> List[Tuple[int, int]]:
         return list(zip(list_factors, list_multiplicities))
 
     if not nat > 0:
-        raise ValueError("Integer must be positive.")
+        raise NotNatError("Integer must be positive.")
 
     if nat == 1:
         return []
@@ -195,7 +195,7 @@ def lin_congruence(a: int, b: int, m: int) -> Set[int]:
         return set([(x_naught + int(k*m/num_solutions)) % m for k in range(num_solutions)])
 
 
-def euler_phi(nat: int) -> int:
+def eulers_phi(nat: int) -> int:
     """
     The number of positive integers not exceeding nat that are relatively prime to nat.
     Conditions:
@@ -205,7 +205,7 @@ def euler_phi(nat: int) -> int:
     :return: phi(nat)
     """
     if not nat > 0:
-        raise ValueError("Only defined for natural numbers.")
+        raise NotNatError("Only defined for natural numbers.")
 
     if nat == 1:
         return 0
@@ -232,7 +232,7 @@ def inv(a: int, m: int) -> int:
     :return: non-zero integer
     """
     if not m > 0:
-        raise ValueError("Modulus must be positive.")
+        raise NotNatError("Modulus must be positive.")
     elif a == 0:
         raise ValueError("Zero has no inverse.")
     elif gcd(a, m) != 1:
@@ -241,23 +241,27 @@ def inv(a: int, m: int) -> int:
     return extended_euclid(a%m, -m)[1] % m
 
 
-def chinese_remain(lin_cons: List[Tuple[int, int]]) -> Tuple[int, int]:
+def chinese_remainder(lin_cons: List[Tuple[int, int]]) -> Tuple[int, int]:
     """
     Solves the system of linear congruences.
     The input is a list of (b_i, m_i), where x = b_i (mod m_i)
     Conditions:
         1) m's must be pairwise coprime
+        2) lin_cons must be non-empty
     :param lin_cons: list of linear congruences with a = 1
     :return: Simultaneous solution to the linear congruences.
     """
+    if len(lin_cons) == 0:
+        raise ValueError("List of linear congruences must be non-empty.")
+
     for lin_con in lin_cons:
         if not lin_con[1] > 0:
-            raise ValueError("Modulus must be a natural number.")
+            raise NotNatError("Modulus must be a natural number.")
 
     for index_i in range(len(lin_cons)):
         for index_j in range(index_i+1, len(lin_cons)):
             if gcd(lin_cons[index_i][1], lin_cons[index_j][1]) != 1:
-                raise ValueError("Modulus must be pairwise coprime.")
+                raise CoprimeError("Modulus must be pairwise coprime.")
 
     m_product = product([lin_con[1] for lin_con in lin_cons])
     total = 0
@@ -270,18 +274,18 @@ def chinese_remain(lin_cons: List[Tuple[int, int]]) -> Tuple[int, int]:
     return total % m_product, m_product
 
 
-def divisor_sum(n: int, x: int) -> int:
-    """
-    Returns the sum of, divisors of n raised to the xth power.
-    Conditions:
-        1) n > 0
-        2) x >= 0
-
-    :param n: natural number
-    :param x: non-negative integer
-    :return: sigma_x(n)
-    """
-    if n == 1:
-        return 1
-    # FIX
-    return sum([factor[0]**x for factor in prime_factors(n)]) + 1**x + n**x
+# def divisor_sum(n: int, x: int) -> int:
+#     """
+#     Returns the sum of, divisors of n raised to the xth power.
+#     Conditions:
+#         1) n > 0
+#         2) x >= 0
+#
+#     :param n: natural number
+#     :param x: non-negative integer
+#     :return: sigma_x(n)
+#     """
+#     if n == 1:
+#         return 1
+#     # FIX
+#     return sum([factor[0]**x for factor in prime_factors(n)]) + 1**x + n**x
