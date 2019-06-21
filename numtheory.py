@@ -6,6 +6,7 @@ import functools
 import operator
 import math
 import fractions
+import random
 
 
 class CoprimeError(Exception):
@@ -248,6 +249,7 @@ def chinese_remainder(lin_cons: List[Tuple[int, int]]) -> Tuple[int, int]:
     Conditions:
         1) m's must be pairwise coprime
         2) lin_cons must be non-empty
+
     :param lin_cons: list of linear congruences with a = 1
     :return: Simultaneous solution to the linear congruences.
     """
@@ -274,18 +276,142 @@ def chinese_remainder(lin_cons: List[Tuple[int, int]]) -> Tuple[int, int]:
     return total % m_product, m_product
 
 
-# def divisor_sum(n: int, x: int) -> int:
-#     """
-#     Returns the sum of, divisors of n raised to the xth power.
-#     Conditions:
-#         1) n > 0
-#         2) x >= 0
-#
-#     :param n: natural number
-#     :param x: non-negative integer
-#     :return: sigma_x(n)
-#     """
-#     if n == 1:
-#         return 1
-#     # FIX
-#     return sum([factor[0]**x for factor in prime_factors(n)]) + 1**x + n**x
+def divisors(integer: int) -> Set[int]:
+    """
+    Gives all positive divisors of a non-zero integer.
+    https://stackoverflow.com/questions/171765/what-is-the-best-way-to-get-all-the-divisors-of-a-number
+
+    :param integer: integer
+    :return: A list of positive divisors.
+    """
+    if integer == 0:
+        raise ValueError("Integer must be non-zero.")
+
+    if abs(integer) == 1:
+        return {1}
+
+    list_prime_factors = prime_factors(abs(integer))
+    num_unique_prime_factors = len(list_prime_factors)
+    multiplicity_count = [0] * num_unique_prime_factors
+    list_divisors = []
+    while True:
+        list_divisors.append(functools.reduce(operator.mul,
+                                              [pow(list_prime_factors[x][0], multiplicity_count[x])
+                                               for x in range(num_unique_prime_factors)],
+                                              1))
+        index = 0
+        while True:
+            multiplicity_count[index] += 1
+            if not multiplicity_count[index] > list_prime_factors[index][1]:
+                break
+            multiplicity_count[index] = 0
+            index += 1
+            if index == num_unique_prime_factors:
+                return set(list_divisors)
+
+
+def sum_divisors(n: int, x: int) -> int:
+    """
+    Returns the sum of the positive divisors of n raised to the xth power.
+    Conditions:
+        1) n != 0
+        2) x >= 0
+
+    :param n: non-negative integer
+    :param x: natural number
+    :return: sigma_x(n)
+    """
+    if n == 0:
+        raise ValueError("Cannot find divisors of zero.")
+    elif not x >= 0:
+        raise ValueError("Exponent must be non-negative.")
+
+    if n == 1:
+        return 1
+
+    return sum([divisor**x for divisor in divisors(n)])
+
+
+def mersenne_num(n: int) -> int:
+    """
+    Returns the nth Mersenne number.
+    Conditions:
+        1) n > 0
+
+    :param n: natural number
+    :return: the nth Mersenne number.
+    """
+    if not n > 0:
+        raise NotNatError("Argument must be positive.")
+
+    return pow(2, n) - 1
+
+
+def mersenne_prime(n: int) -> int:
+    """
+    Returns the nth Mersenne prime.
+    Conditions:
+        1) n > 0
+
+    :param n: natural number
+    :return: the nth Mersenne prime
+    """
+    p = [2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281,
+         3217, 4253, 4423, 9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243,
+         110503, 132049]
+    if not n > 0:
+        raise NotNatError
+    elif n > len(p):
+        raise Exception("Larger Mersenne primes but have not been coded in...")
+
+    return pow(2, p[n-1]) - 1
+
+
+def rabin_miller(n: int, a: int = None, t: int = 1):
+    """
+    Rabin-Miller test for compositeness.
+    Conditions:
+        1) n is an odd number >= 3
+        2) a is in the range [2, n-2]
+        3) t >= 1
+
+    :param n: the number being tested
+    :param a: the base
+    :param t: the number of times the test is being run
+    :return: is the number composite? (false does not imply primality)
+    """
+    if not n >= 3:
+        raise ValueError
+    elif n % 2 == 0:
+        raise ValueError
+    elif not t >= 1:
+        raise ValueError
+    elif a is not None and not 2 <= a <= n-2:
+        raise ValueError
+
+    if n == 3:
+        return False
+
+    # n-1 = pow(2, k) * q
+    k = 0
+    q = n - 1
+    while q % 2 == 1:
+        q /= 2
+        k += 1
+
+    for trial in range(t):
+        if trial != 0 or a is None:
+            a = random.randint(2, n - 2)
+
+        x = pow(a, q, n)
+        if x == 1 or x == n - 1:
+            continue
+
+        for i in range(k):
+            x = pow(x, 2, n)
+            if x == -1:
+                continue
+        else:
+            return True
+
+    return False

@@ -86,7 +86,7 @@ class Tests(unittest.TestCase):
         self.assertRaises(ValueError, lin_congruence, 9, 9, -1)
         self.assertRaises(ValueError, lin_congruence, 9, 9, 0)
 
-    def test_euler_phi(self):
+    def test_eulers_phi(self):
         self.assertEqual(eulers_phi(1), 0)
         self.assertEqual(eulers_phi(2), 1)
         self.assertEqual(eulers_phi(3), 2)
@@ -107,7 +107,7 @@ class Tests(unittest.TestCase):
         self.assertRaises(ValueError, inv, 0, 7)
         self.assertRaises(CoprimeError, inv, 2, 6)
 
-    def test_chinese_remain(self):
+    def test_chinese_remainder(self):
         self.assertEqual(chinese_remainder([(1, 5), (2, 7), (3, 9), (4, 11)]), (1731, 3465))
 
         self.assertRaises(CoprimeError, chinese_remainder, [(1, 2), (2, 3), (3, 4)])
@@ -117,11 +117,86 @@ class Tests(unittest.TestCase):
         self.assertRaises(NotNatError, chinese_remainder, [(1, 0), (2, 5), (3, 7)])
         self.assertRaises(ValueError, chinese_remainder, [])
 
-    # def test_divisor_sum(self):
-    #     self.assertEqual(divisor_sum(1, 0), 1)
-    #     self.assertEqual(divisor_sum(2, 0), 2)
-    #     self.assertEqual(divisor_sum(3, 0), 2)
-    #     self.assertEqual(divisor_sum(4, 0), 3)
+    def test_divisors(self):
+        self.assertEqual(divisors(1), {1})
+        self.assertEqual(divisors(2), {1, 2})
+        self.assertEqual(divisors(3), {1, 3})
+        self.assertEqual(divisors(12), {1, 2, 3, 4, 6, 12})
+        self.assertEqual(divisors(146), divisors(-146))
+
+        self.assertRaises(ValueError, divisors, 0)
+
+    def test_sum_divisors(self):
+        # results from https://en.wikipedia.org/wiki/Divisor_function
+        self.assertEqual(sum_divisors(1, 0), 1)
+        self.assertEqual(sum_divisors(2, 0), 2)
+        self.assertEqual(sum_divisors(3, 0), 2)
+        self.assertEqual(sum_divisors(4, 0), 3)
+        self.assertEqual(sum_divisors(5, 0), 2)
+        self.assertEqual(sum_divisors(6, 0), 4)
+        self.assertEqual(sum_divisors(1, 1), 1)
+        self.assertEqual(sum_divisors(2, 1), 3)
+        self.assertEqual(sum_divisors(3, 1), 4)
+        self.assertEqual(sum_divisors(4, 1), 7)
+        self.assertEqual(sum_divisors(5, 1), 6)
+        self.assertEqual(sum_divisors(6, 1), 12)
+        self.assertEqual(sum_divisors(1, 2), 1)
+        self.assertEqual(sum_divisors(2, 2), 5)
+        self.assertEqual(sum_divisors(3, 2), 10)
+        self.assertEqual(sum_divisors(4, 2), 21)
+        self.assertEqual(sum_divisors(5, 2), 26)
+        self.assertEqual(sum_divisors(6, 2), 50)
+        self.assertEqual(sum_divisors(1, 3), 1)
+        self.assertEqual(sum_divisors(2, 3), 9)
+        self.assertEqual(sum_divisors(3, 3), 28)
+        self.assertEqual(sum_divisors(4, 3), 73)
+        self.assertEqual(sum_divisors(5, 3), 126)
+        self.assertEqual(sum_divisors(6, 3), 252)
+
+        self.assertEqual(sum_divisors(125, 1), 156)
+        self.assertEqual(sum_divisors(-125, 1), 156)
+
+        self.assertRaises(ValueError, sum_divisors, 0, 5)
+        self.assertRaises(ValueError, sum_divisors, 5, -5)
+
+    def test_mersenne_num(self):
+        self.assertEqual(mersenne_num(1), 1)
+        self.assertEqual(mersenne_num(2), 3)
+        self.assertEqual(mersenne_num(3), 7)
+        self.assertEqual(mersenne_num(4), 15)
+        self.assertEqual(mersenne_num(10), 1023)
+
+        self.assertRaises(NotNatError, mersenne_num, -1)
+        self.assertRaises(NotNatError, mersenne_num, 0)
+
+    def test_mersenne_prime(self):
+        self.assertEqual(mersenne_prime(9), 2305843009213693951)
+
+        self.assertRaises(NotNatError, mersenne_prime, -1)
+        self.assertRaises(NotNatError, mersenne_prime, 0)
+
+    def test_rabin_miller(self):
+        self.assertRaises(ValueError, rabin_miller, 1, 2)
+        self.assertRaises(ValueError, rabin_miller, 6, 2)
+        self.assertRaises(ValueError, rabin_miller, 11, 10)
+        self.assertRaises(ValueError, rabin_miller, 11, 5, -1)
+        self.assertRaises(ValueError, rabin_miller, 11, 5, 0)
+
+        self.assertEqual(rabin_miller(3), False)
+        self.assertEqual(rabin_miller(5), False)
+        self.assertEqual(rabin_miller(7), False)
+        self.assertEqual(rabin_miller(7, t=10), False)
+        self.assertEqual(rabin_miller(17, t=10), False)
+        self.assertEqual(rabin_miller(pow(2, 31) - 1, t=10), False)
+        self.assertEqual(rabin_miller(pow(2, 31) - 1, 100, t=10), False)
+
+        self.assertEqual(rabin_miller(33, 5), True)
+        self.assertEqual(rabin_miller(33, 6), True)
+        self.assertEqual(rabin_miller(33, 7), True)
+        self.assertEqual(rabin_miller(33, 8), True)
+
+        # even though 221 is composite, this test returns false
+        self.assertEqual(rabin_miller(221, 174), False)
 
 
 if __name__ == "__main__":
