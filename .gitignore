@@ -4,7 +4,3 @@ venv/
 
 # python
 __pycache__/
-
-# temp files
-documentation.txt
-Some Stuff.py

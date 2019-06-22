@@ -187,8 +187,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(rabin_miller(7), False)
         self.assertEqual(rabin_miller(7, t=10), False)
         self.assertEqual(rabin_miller(17, t=10), False)
-        self.assertEqual(rabin_miller(pow(2, 31) - 1, t=10), False)
-        self.assertEqual(rabin_miller(pow(2, 31) - 1, 100, t=10), False)
+        self.assertEqual(rabin_miller(pow(2, 31) - 1, 10), False)
+        self.assertEqual(rabin_miller(pow(2, 31) - 1, 100, 10), False)
 
         self.assertEqual(rabin_miller(33, 5), True)
         self.assertEqual(rabin_miller(33, 6), True)
@@ -197,6 +197,78 @@ class Tests(unittest.TestCase):
 
         # even though 221 is composite, this test returns false
         self.assertEqual(rabin_miller(221, 174), False)
+
+    def test_order(self):
+        self.assertEqual(order(5, 13), 4)
+        self.assertEqual(order(3, 7), 6)
+        self.assertEqual(order(-4, 7), 6)
+        self.assertEqual(order(10, 7), 6)
+        self.assertEqual(order(-1, 7), 2)
+        self.assertEqual(order(1, 7), 1)
+
+        self.assertRaises(CoprimeError, order, 3, 6)
+        self.assertRaises(NotNatError, order, 3, -1)
+        self.assertRaises(CoprimeError, order, 3, 0)
+        self.assertRaises(CoprimeError, order, 0, 9)
+        self.assertRaises(ValueError, order, 0, 1)
+
+    def test_trial_division(self):
+        self.assertTrue(not trial_division(1))
+        self.assertTrue(trial_division(2))
+        self.assertTrue(trial_division(3))
+        self.assertTrue(not trial_division(4))
+        self.assertTrue(trial_division(5))
+        self.assertTrue(not trial_division(9409))
+        self.assertTrue(trial_division(997))
+
+        self.assertRaises(NotNatError, trial_division, -1)
+        self.assertRaises(NotNatError, trial_division, 0)
+
+    def test_jacobi_sym(self):
+        self.assertEqual(jacobi_sym(1, 1), 1)
+        self.assertEqual(jacobi_sym(1, 3), 1)
+        self.assertEqual(jacobi_sym(1, 9), 1)
+        self.assertEqual(jacobi_sym(3, 1), 1)
+        self.assertEqual(jacobi_sym(9, 1), 1)
+        self.assertEqual(jacobi_sym(12, 21), 0)
+        self.assertEqual(jacobi_sym(17, 21), 1)
+        self.assertEqual(jacobi_sym(21, 17), 1)
+        self.assertEqual(jacobi_sym(21, 45), 0)
+        self.assertEqual(jacobi_sym(7, 19), 1)
+        self.assertEqual(jacobi_sym(19, 23), -1)
+        self.assertEqual(jacobi_sym(20, 23), -1)
+        self.assertEqual(jacobi_sym(21, 23), -1)
+        self.assertEqual(jacobi_sym(22, 23), -1)
+        self.assertEqual(jacobi_sym(45, 23), -1)
+        self.assertEqual(jacobi_sym(-1, 23), -1)
+        self.assertEqual(jacobi_sym(-24, 23), -1)
+
+        self.assertRaises(ValueError, jacobi_sym, 0, 5)
+        self.assertRaises(ValueError, jacobi_sym, 1, 6)
+        self.assertRaises(NotNatError, jacobi_sym, 3, -1)
+        self.assertRaises(NotNatError, jacobi_sym, 3, 0)
+
+    def test_legendre_sym(self):
+        self.assertEqual(legendre_sym(9, 3), 0)
+        self.assertEqual(legendre_sym(2, 3), -1)
+        self.assertEqual(legendre_sym(1, 3), 1)
+        self.assertEqual(legendre_sym(30, 127), 1)
+        self.assertEqual(legendre_sym(157, 127), 1)
+        self.assertEqual(legendre_sym(-7, 127), 1)
+        self.assertEqual(legendre_sym(18, 83), -1)
+
+        self.assertRaises(ValueError, legendre_sym, 0, 5)
+        self.assertRaises(NotNatError, legendre_sym, 1, -5)
+
+    def test_two_squares(self):
+        self.assertEqual(two_squares(1), (0, 1))
+        self.assertEqual(two_squares(2), (1, 1))
+        self.assertEqual(two_squares(3), (-1, -1))
+        self.assertEqual(two_squares(4), (0, 2))
+        self.assertEqual(two_squares(5), (1, 2))
+        self.assertEqual(two_squares(6), (-1, -1))
+        self.assertEqual(two_squares(349), (5, 18))
+        self.assertEqual(two_squares(18946512), (2004, 3864))
 
 
 if __name__ == "__main__":

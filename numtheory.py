@@ -17,6 +17,10 @@ class NotNatError(Exception):
     pass
 
 
+class NotPrimeError(Exception):
+    pass
+
+
 def product(iterable: iter):
     return functools.reduce(operator.mul, iterable, 1)
 
@@ -182,7 +186,7 @@ def lin_congruence(a: int, b: int, m: int) -> Set[int]:
 
     :param a: integer
     :param b: integer
-    :param m: natural number
+    :param m: modulus
     :return: The solution to the linear congruence.
     """
     if not m > 0:
@@ -229,7 +233,7 @@ def inv(a: int, m: int) -> int:
     ax - my = 1
 
     :param a: non-zero integer
-    :param m: natural number
+    :param m: modulus
     :return: non-zero integer
     """
     if not m > 0:
@@ -318,7 +322,7 @@ def sum_divisors(n: int, x: int) -> int:
         2) x >= 0
 
     :param n: non-negative integer
-    :param x: natural number
+    :param x: exponent
     :return: sigma_x(n)
     """
     if n == 0:
@@ -367,7 +371,7 @@ def mersenne_prime(n: int) -> int:
     return pow(2, p[n-1]) - 1
 
 
-def rabin_miller(n: int, a: int = None, t: int = 1):
+def rabin_miller(n: int, a: int = 2, t: int = 1) -> bool:
     """
     Rabin-Miller test for compositeness.
     Conditions:
@@ -386,7 +390,7 @@ def rabin_miller(n: int, a: int = None, t: int = 1):
         raise ValueError
     elif not t >= 1:
         raise ValueError
-    elif a is not None and not 2 <= a <= n-2:
+    elif not 2 <= a <= n-2 and n != 3:
         raise ValueError
 
     if n == 3:
@@ -415,3 +419,194 @@ def rabin_miller(n: int, a: int = None, t: int = 1):
             return True
 
     return False
+
+
+def order(a: int, m: int) -> int:
+    """
+    Multiplicative order of a modulo m.
+    Conditions:
+        1) a != 0
+        2) m > 0
+        3) gcd(a, m) == 1
+
+    :param a: the base
+    :param m: the modulus
+    :return: Returns the order of a.
+    """
+    if not gcd(a, m) == 1:
+        raise CoprimeError("The two parameters must be relatively prime.")
+    elif not m > 0:
+        raise NotNatError("Modulus must be positive.")
+    elif a == 0:
+        raise ValueError("a must be non-negative.")
+
+    a %= m
+    if a == 1:
+        return 1
+
+    a_k = a
+    for k in range(2, eulers_phi(m) + 1):
+        a_k = (a_k * a) % m
+        if a_k == 1:
+            return k
+    else:
+        raise Exception("Unreachable code.")
+
+
+def trial_division(n: int) -> bool:
+    """
+    Tests the given natural number for primality through trial division.
+
+    :param n: natural number
+    :return: is the natural number a prime?
+    """
+    if not n > 0:
+        raise NotNatError
+
+    if n == 1:
+        return False
+    if n == 2:
+        return True
+
+    for i in range(2, int(math.sqrt(n) + 1)):
+        if n % i == 0:
+            return False
+    else:
+        return True
+
+
+def jacobi_sym(a: int, m: int) -> int:
+    """
+    The Jacobi symbol.
+    Conditions:
+        1) m is an odd positive integer
+        2) a is a non-zero integer
+
+    :param a: integer
+    :param m: natural number
+    :return: (a/m)
+    """
+    if a == 0:
+        raise ValueError
+    elif not m > 0:
+        raise NotNatError
+    elif m % 2 == 0:
+        raise ValueError
+
+    if gcd(a, m) != 1:
+        return 0
+    if a == 1 or m == 1:
+        return 1
+
+    multiplier = 1
+    while True:
+        a %= m
+
+        while a % 2 == 0:
+            a = a // 2
+            if m % 8 == 3 or m % 8 == 5:
+                multiplier *= -1
+
+        if a == 1:
+            return multiplier*a
+        if a == -1:
+            return multiplier*a * (1 if m % 4 == 1 else -1)
+
+        if a % 4 == 3 and m % 4 == 3:
+            multiplier *= -1
+        temp = a
+        a = m
+        m = temp
+
+
+def legendre_sym(a: int, p: int) -> int:
+    """
+    The Legendre symbol.
+    Conditions:
+        1) p is an odd positive prime
+        2) a is a non-zero integer
+
+    :param a: integer
+    :param p: prime
+    :return: (a/p)
+    """
+    if not trial_division(p):
+        raise NotPrimeError
+
+    return jacobi_sym(a, p)
+
+
+def two_squares(n: int) -> Tuple[int, int]:
+    """
+    Returns two non-negative integers such that the sum of their squares is
+    equal to the given natural number. If such a thing is not possible, then
+    returns (-1, -1).
+    Conditions:
+        1) n > 0
+
+    :param n: natural number
+    :return: (int, int)
+    """
+    if not n > 0:
+        raise NotNatError
+
+    if n == 1:
+        return 0, 1
+
+    factors = prime_factors(n)
+
+    for factor in factors:
+        if factor[0] % 4 == 3 and factor[1] % 2 == 1:
+            return -1, -1
+
+    pairs = []
+    m_squared = 1
+
+    for factor in factors:
+        if factor[0] % 4 == 1:
+            p = factor[0]
+            x = y = 1
+            for i in range(int(math.sqrt(p)), p):
+                if (i ** 2) % p == p - 1:
+                    x = i
+                    break
+
+            while True:
+                if (x**2 + y**2) % p != 0:
+                    raise Exception("Shouldn't have happened.")
+
+                m = (x**2 + y**2) // p
+                if m == 1:
+                    pairs.append((abs(x), abs(y)))
+                    break
+
+                # not sure if flooring is okay
+                r = x % m
+                if r > m/2:
+                    r -= m
+                s = y % m
+                if s > m/2:
+                    s -= m
+
+                a = (r*x + s*y) // m
+                b = (r*y - s*x) // m
+
+                x = a
+                y = b
+
+        elif factor[0] % 4 == 3:
+            m_squared *= int(math.sqrt(pow(factor[0], factor[1])))
+        elif factor[0] == 2:
+            for i in range(factor[1]):
+                pairs.append((1, 1))
+        else:
+            raise Exception("Unreachable code.")
+
+    current_pair = pairs[0]
+    for pair in pairs[1:]:
+        current_pair = (abs(current_pair[0] * pair[0] + current_pair[1] * pair[1]),
+                        abs(current_pair[0] * pair[1] - current_pair[1] * pair[0]))
+
+    current_pair = list(current_pair)
+    current_pair.sort()
+    return current_pair[0] * m_squared, current_pair[1] * m_squared
