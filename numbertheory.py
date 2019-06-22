@@ -8,21 +8,77 @@ import math
 import fractions
 import random
 
+# ======================================================================
+# Errors
+# ======================================================================
+
 
 class CoprimeError(Exception):
+    """
+    Integers are not relatively prime.
+    """
     pass
 
 
 class NotNatError(Exception):
+    """
+    Integer is not a natural number.
+    """
     pass
 
 
 class NotPrimeError(Exception):
+    """
+    Integer is not prime.
+    """
     pass
+
+
+class UnreachableError(Exception):
+    """
+    Reached code that in theory is unreachable.
+    """
+    pass
+
+
+# ======================================================================
+# Utils
+# ======================================================================
 
 
 def product(iterable: iter):
     return functools.reduce(operator.mul, iterable, 1)
+
+
+def sqrt_radical_pow(a: int, b: int, c: int, n: int) -> Tuple[int, int]:
+    """
+    (x + y*sqrt(c)) = (a + b*sqrt(c))^n
+                    = (u + v*sqrt(c)) * (a + b*sqrt(c))
+
+    :param a: integer
+    :param b: integer
+    :param c: integer
+    :param n: natural number
+    :return: (x, y)
+    """
+    if not n > 0:
+        raise NotNatError
+
+    x = a
+    y = b
+    for i in range(n-1):
+        old_x = x
+        old_y = y
+
+        x = old_x*a + old_y*b*c
+        y = old_x*b + old_y*a
+
+    return x, y
+
+
+# ======================================================================
+# Functions
+# ======================================================================
 
 
 def gcd(a: int, b: int) -> int:
@@ -200,7 +256,7 @@ def lin_congruence(a: int, b: int, m: int) -> Set[int]:
         return set([(x_naught + int(k*m/num_solutions)) % m for k in range(num_solutions)])
 
 
-def eulers_phi(nat: int) -> int:
+def phi(nat: int) -> int:
     """
     The number of positive integers not exceeding nat that are relatively prime to nat.
     Conditions:
@@ -445,12 +501,12 @@ def order(a: int, m: int) -> int:
         return 1
 
     a_k = a
-    for k in range(2, eulers_phi(m) + 1):
+    for k in range(2, phi(m) + 1):
         a_k = (a_k * a) % m
         if a_k == 1:
             return k
     else:
-        raise Exception("Unreachable code.")
+        raise UnreachableError
 
 
 def trial_division(n: int) -> bool:
@@ -475,7 +531,7 @@ def trial_division(n: int) -> bool:
         return True
 
 
-def jacobi_sym(a: int, m: int) -> int:
+def jacobi(a: int, m: int) -> int:
     """
     The Jacobi symbol.
     Conditions:
@@ -519,12 +575,12 @@ def jacobi_sym(a: int, m: int) -> int:
         m = temp
 
 
-def legendre_sym(a: int, p: int) -> int:
+def legendre(a: int, p: int) -> int:
     """
     The Legendre symbol.
     Conditions:
         1) p is an odd positive prime
-        2) a is a non-zero integer
+        2) a is an odd prime
 
     :param a: integer
     :param p: prime
@@ -533,7 +589,7 @@ def legendre_sym(a: int, p: int) -> int:
     if not trial_division(p):
         raise NotPrimeError
 
-    return jacobi_sym(a, p)
+    return jacobi(a, p)
 
 
 def two_squares(n: int) -> Tuple[int, int]:
@@ -600,7 +656,7 @@ def two_squares(n: int) -> Tuple[int, int]:
             for i in range(factor[1]):
                 pairs.append((1, 1))
         else:
-            raise Exception("Unreachable code.")
+            raise UnreachableError
 
     current_pair = pairs[0]
     for pair in pairs[1:]:
@@ -610,3 +666,168 @@ def two_squares(n: int) -> Tuple[int, int]:
     current_pair = list(current_pair)
     current_pair.sort()
     return current_pair[0] * m_squared, current_pair[1] * m_squared
+
+
+def square_triangular(n: int) -> Tuple[int, int, int]:
+    """
+    Returns the nth square triangular number, as well as the index of the
+    triangular number and square number respectively.
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: a three element tuple of natural numbers
+    """
+    if not n >= 0:
+        raise NotNatError
+
+    if n == 0:
+        return 0, 0, 0
+
+    indices = sqrt_radical_pow(3, 2, 2, n)
+    triangle_index = (indices[0]-1)//2
+    triangle = (triangle_index * (triangle_index+1))//2
+    square_index = indices[1]//2
+    square = square_index**2
+    assert triangle == square
+    return triangle, triangle_index, square_index
+
+
+def mobius(n: int) -> int:
+    """
+    Mobius Function
+    Conditions:
+        1) n > 0
+
+    :param n: natural number
+    :return: mu(n)
+    """
+    if not n > 0:
+        raise NotNatError
+
+    factors = prime_factors(n)
+    for factor in factors:
+        if factor[1] > 1:
+            return 0
+    else:
+        return (-1)**len(factors)
+
+
+def triangular(n: int) -> int:
+    """
+    Triangular Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth triangular number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return n*(n+1)//2
+
+
+def square(n: int) -> int:
+    """
+    Square Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth square number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return n**2
+
+
+def pentagonal(n: int) -> int:
+    """
+    Pentagonal Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth pentagonal number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return (3*n**2 - n)//2
+
+
+def hexagonal(n: int) -> int:
+    """
+    Hexagonal Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth hexagonal number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return 2*n**2 - n
+
+
+def heptagonal(n: int) -> int:
+    """
+    Heptagonal Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth heptagonal number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return n*(5*n - 3)//2
+
+
+def octagonal(n: int) -> int:
+    """
+    Octagonal Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth octagonal number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return 3*n**2 - 2*n
+
+
+def nonagonal(n: int) -> int:
+    """
+    Nonagonal Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth nonagonal number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return n*(7*n - 5)//2
+
+
+def decagonal(n: int) -> int:
+    """
+    Decagonal Number
+    Conditions:
+        1) n >= 0
+
+    :param n: non-negative integer
+    :return: nth decagonal number
+    """
+    if not n >= 0:
+        raise ValueError
+
+    return 4*n**2 - 3*n
