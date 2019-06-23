@@ -343,6 +343,46 @@ class Tests(unittest.TestCase):
         self.assertRaises(ValueError, nonagonal, -1)
         self.assertRaises(ValueError, decagonal, -1)
 
+    def test_sqrt_frac(self):
+        self.assertEqual(sqrt_frac(0), [0])
+        self.assertEqual(sqrt_frac(1), [1])
+        self.assertEqual(sqrt_frac(2), [1, 2])
+        self.assertEqual(sqrt_frac(3), [1, 1, 2])
+        self.assertEqual(sqrt_frac(4), [2])
+        self.assertEqual(sqrt_frac(5), [2, 4])
+        self.assertEqual(sqrt_frac(6), [2, 2, 4])
+        self.assertEqual(sqrt_frac(7), [2, 1, 1, 1, 4])
+        self.assertEqual(sqrt_frac(8), [2, 1, 4])
+        self.assertEqual(sqrt_frac(9), [3])
+        self.assertEqual(sqrt_frac(10), [3, 6])
+        self.assertEqual(sqrt_frac(11), [3, 3, 6])
+        self.assertEqual(sqrt_frac(12), [3, 2, 6])
+        self.assertEqual(sqrt_frac(13), [3, 1, 1, 1, 1, 6])
+        self.assertEqual(sqrt_frac(14), [3, 1, 2, 1, 6])
+        self.assertEqual(sqrt_frac(15), [3, 1, 6])
+        self.assertEqual(sqrt_frac(16), [4])
+        self.assertEqual(sqrt_frac(17), [4, 8])
+        self.assertEqual(sqrt_frac(18), [4, 4, 8])
+        self.assertEqual(sqrt_frac(19), [4, 2, 1, 3, 1, 2, 8])
+        self.assertEqual(sqrt_frac(20), [4, 2, 8])
+        self.assertEqual(sqrt_frac(22), [4, 1, 2, 4, 2, 1, 8])
+        self.assertEqual(sqrt_frac(31), [5, 1, 1, 3, 5, 3, 1, 1, 10])
+
+    def test_fundamental_pell(self):
+        self.assertEqual(fundamental_pell(2), (3, 2))
+        self.assertEqual(fundamental_pell(3), (2, 1))
+        self.assertEqual(fundamental_pell(6), (5, 2))
+        self.assertEqual(fundamental_pell(10), (19, 6))
+        self.assertEqual(fundamental_pell(17), (33, 8))
+        self.assertEqual(fundamental_pell(26), (51, 10))
+
+        self.assertEqual(fundamental_pell(22), (197, 42))
+        self.assertEqual(fundamental_pell(31), (1520, 273))
+        self.assertEqual(fundamental_pell(58), (19603, 2574))
+        self.assertEqual(fundamental_pell(73), (2281249, 267000))
+
+        self.assertEqual(fundamental_pell(97), (62809633, 6377352))
+
 
 if __name__ == "__main__":
     unittest.main()

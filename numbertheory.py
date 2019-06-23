@@ -831,3 +831,91 @@ def decagonal(n: int) -> int:
         raise ValueError
 
     return 4*n**2 - 3*n
+
+
+def sqrt_frac(n: int) -> List:
+    """
+    Returns the continued fraction representation of sqrt(n)
+    in the form [i; a_1, a_2, ..., a_n]
+
+    Thanks to:
+    https://math.stackexchange.com/questions/1198692/continued-fraction-expansion-for-%E2%88%9A7
+
+    :param n: non-negative integer
+    :return: continued fraction
+    """
+    if not n >= 0:
+        raise ValueError
+
+    whole = math.floor(math.sqrt(n))
+    array = [whole]
+
+    if whole - math.sqrt(n) == 0:
+        return array
+
+    # x/(sqrt(a) + b)
+    first = (1 , n, -whole)
+    rad = first
+
+    while True:
+        # (sqrt(a) + b)/x
+        flipped = [rad[1], -rad[2], (rad[1] - rad[2]**2)//rad[0]]
+        whole = math.floor((math.sqrt(flipped[0])+flipped[1])/flipped[2])
+        flipped[1] -= whole*flipped[2]
+        array.append(whole)
+        rad = (flipped[2], flipped[0], flipped[1])
+
+        if rad == first:
+            break
+
+    return array
+
+
+def fundamental_pell(n: int) -> Tuple[int, int]:
+    """
+    Gives the fundamental solution to Pell's equation of the form,
+    x^2 - Dy^2 = 1.
+    Referenced:
+    https://en.wikipedia.org/wiki/Pell%27s_equation#Fundamental_solution_via_continued_fractions
+    https://en.wikipedia.org/wiki/Generalized_continued_fraction
+
+    :param n: non-square positive integer (greater than 1)
+    :return: fundamental solution
+    """
+    if not n > 0:
+        raise NotNatError
+    # deal with perfect square later
+    # consider: https://stackoverflow.com/questions/2489435/check-if-a-number-is-a-perfect-square
+    elif math.sqrt(n)//1 == math.sqrt(n):
+        raise ValueError
+
+    continued = sqrt_frac(n)
+
+    # a_(n-2)
+    a_2 = 1
+    a_1 = continued[0]
+    b_2 = 0
+    b_1 = 1
+
+    if a_1**2 - n*b_1**2 == 1:
+        return a_1, b_1
+
+    index = 1
+    while True:
+        if index >= len(continued):
+            index = 1
+
+        a_n = continued[index]*a_1 + 1*a_2
+        b_n = continued[index]*b_1 + 1*b_2
+
+        if a_n**2 - n*b_n**2 == 1:
+            return a_n, b_n
+
+        old_a = a_n
+        old_b = b_n
+        a_2 = a_1
+        b_2 = b_1
+        a_1 = old_a
+        b_1 = old_b
+
+        index += 1
