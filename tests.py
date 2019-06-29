@@ -382,6 +382,13 @@ class Tests(unittest.TestCase):
         self.assertEqual(fundamental_pell(73), (2281249, 267000))
 
         self.assertEqual(fundamental_pell(97), (62809633, 6377352))
+        self.assertEqual(fundamental_pell(109), (158070671986249, 15140424455100))
+
+    def test_ind(self):
+        self.assertEqual(ind(3, 13, 17), 4)
+        self.assertEqual(ind(3, 3, 17), 1)
+        self.assertEqual(ind(20, 3, 17), 1)
+        self.assertEqual(ind(3, 20, 17), 1)
 
 
 if __name__ == "__main__":
